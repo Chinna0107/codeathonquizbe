@@ -1,0 +1,65 @@
+Run the init command in your app's root directory to connect your app to Neon.
+
+npx neonctl@latest init
+
+-- Users table
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  is_admin BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ALTER TABLE users ADD COLUMN is_blocked BOOLEAN DEFAULT FALSE;
+
+
+
+OTP TABLE
+CREATE TABLE otps (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  otp VARCHAR(6) NOT NULL,
+  expires_at TIMESTAMP NOT NULL,
+  verified BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+-- Quiz tables
+CREATE TABLE quizzes (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  created_by INTEGER REFERENCES users(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE quizzes ADD COLUMN quiz_key_id VARCHAR(255) UNIQUE;
+
+
+CREATE TABLE questions (
+  id SERIAL PRIMARY KEY,
+  quiz_id INTEGER REFERENCES quizzes(id) ON DELETE CASCADE,
+  question_text TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE options (
+  id SERIAL PRIMARY KEY,
+  question_id INTEGER REFERENCES questions(id) ON DELETE CASCADE,
+  option_text TEXT NOT NULL,
+  is_correct BOOLEAN DEFAULT FALSE
+);
+
+CREATE TABLE quiz_results (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER REFERENCES users(id),
+  quiz_id INTEGER REFERENCES quizzes(id),
+  score INTEGER NOT NULL,
+  total_questions INTEGER NOT NULL,
+  percentage INTEGER NOT NULL,
+  completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
