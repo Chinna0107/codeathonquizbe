@@ -19,8 +19,8 @@ app.use(
       "http://localhost:3000",
 
       // Delivery frontend
-      "https://quiz-app-xi-nine-50.vercel.app",
-      "https://quiz-app-git-main-chinna0107s-projects.vercel.app",
+      "https://quiz-app-swart-iota.vercel.app",
+      "https://quiz-app-git-main-chinna.vercel.app",
 
       // ChinnaMart frontend
     //   "https://chinnamart.vercel.app",
@@ -34,7 +34,6 @@ app.use(
 
 app.use('/api/users', userRoutes);
 app.use('/api/admin', adminRoutes);
-
 app.get('/', (req, res) => {
   res.send('Quiz Backend API');
 });

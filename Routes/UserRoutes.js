@@ -41,7 +41,12 @@ router.post('/send-otp', async (req, res) => {
       from: process.env.MAIL_USER,
       to: email,
       subject: 'Your OTP Code',
-      html: `<h2>Your OTP Code</h2><p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 5 minutes.</p>`
+      html: `<h2>Your OTP Code</h2><p>Your verification code is: <strong>${otp}</strong></p><p>This code will expire in 5 minutes.</p>
+          <p>If you did not request this, please ignore this email.</p>
+          <p>Best regards,<br/>Quiz App Team</p>
+          <p>Founder & CEO </p>
+             <h1>Mr. Hemanth Kancharla</h1>
+          <p>© 2025 Quiz App. All rights reserved.</p>`
     });
     
     res.json({ message: 'OTP sent successfully' });
