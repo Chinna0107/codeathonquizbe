@@ -88,8 +88,8 @@ router.post('/verify-otp', async (req, res) => {
 
 // Create account endpoint
 router.post('/create-account', async (req, res) => {
-  const { email, name, password, confirmPassword } = req.body;
-  console.log('Create account request:', { email, name });
+  const { email, name, phone_number, password, confirmPassword, year, branch, roll_no } = req.body;
+  console.log('Create account request:', { email, name, phone_number, year, branch, roll_no });
   
   if (!email || !name || !password || !confirmPassword) {
     return res.status(400).json({ error: 'All fields are required' });
@@ -121,8 +121,8 @@ router.post('/create-account', async (req, res) => {
     console.log('Password hashed, inserting user...');
     
     const insertResult = await pool.query(
-      'INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING id',
-      [name, email, hashedPassword]
+      'INSERT INTO users (name, email, phone_number, year, branch, roll_no, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id',
+      [name, email, phone_number, year, branch, roll_no, hashedPassword]
     );
     
     console.log('User inserted with ID:', insertResult.rows[0].id);
@@ -521,6 +521,7 @@ router.get('/stats', async (req, res) => {
 
 // Get user profile
 router.get('/profile', async (req, res) => {
+  console.log("profile api called")
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(' ')[1];
   
@@ -531,7 +532,7 @@ router.get('/profile', async (req, res) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const result = await pool.query(
-      'SELECT id, name, email, created_at FROM users WHERE id = $1',
+      'SELECT id, name, email, phone_number, created_at FROM users WHERE id = $1',
       [decoded.id]
     );
     

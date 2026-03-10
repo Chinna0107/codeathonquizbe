@@ -63,3 +63,12 @@ CREATE TABLE quiz_results (
   completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+
+
+-- Add phone_number column to users table
+ALTER TABLE users ADD COLUMN phone_number VARCHAR(20);
+
+-- Add year, branch, and roll_no columns to users table
+ALTER TABLE users ADD COLUMN year VARCHAR(10);
+ALTER TABLE users ADD COLUMN branch VARCHAR(50);
+ALTER TABLE users ADD COLUMN roll_no VARCHAR(50);
