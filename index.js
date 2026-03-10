@@ -19,8 +19,9 @@ app.use(
       "http://localhost:3000",
 
       // Delivery frontend
-      "https://quiz-app-swart-iota.vercel.app",
-      "https://quiz-app-git-main-chinna.vercel.app",
+      // "https://quiz-app-swart-iota.vercel.app",
+      "https://quiz-app-orcin-kappa.vercel.app",
+      // "https://quiz-app-git-main-chinna.vercel.app",
 
       // ChinnaMart frontend
     //   "https://chinnamart.vercel.app",
