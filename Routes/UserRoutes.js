@@ -265,7 +265,7 @@ router.post('/update-password', async (req, res) => {
 router.get('/quizzes', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT q.id, q.title, q.description, q.quiz_key_id, q.timer, q.created_at,
+      SELECT q.id, q.title, q.description, q.quiz_key_id, q.created_at,
         json_agg(qs.id) FILTER (WHERE qs.id IS NOT NULL) as questions
       FROM quizzes q
       LEFT JOIN questions qs ON qs.quiz_id = q.id
