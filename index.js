@@ -20,7 +20,7 @@ app.use(
 
       // Delivery frontend
       // "https://quiz-app-swart-iota.vercel.app",
-      "https://quiz-app-orcin-kappa.vercel.app",
+      "https://codeathon-three.vercel.app",
       // "https://quiz-app-git-main-chinna.vercel.app",
 
       // ChinnaMart frontend
