@@ -264,10 +264,14 @@ router.post('/update-password', async (req, res) => {
 // Get all quizzes
 router.get('/quizzes', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT DISTINCT id, title, description, quiz_key_id, created_at FROM quizzes ORDER BY created_at DESC'
-    );
-    
+    const result = await pool.query(`
+      SELECT q.id, q.title, q.description, q.quiz_key_id, q.timer, q.created_at,
+        json_agg(qs.id) FILTER (WHERE qs.id IS NOT NULL) as questions
+      FROM quizzes q
+      LEFT JOIN questions qs ON qs.quiz_id = q.id
+      GROUP BY q.id
+      ORDER BY q.created_at DESC
+    `);
     res.json(result.rows);
   } catch (error) {
     console.error('Error:', error);
@@ -275,81 +279,32 @@ router.get('/quizzes', async (req, res) => {
   }
 });
 
-// Get quiz by title
-
-
-// Get quiz by quiz_key_id
+// Get quiz by quiz_key_id or numeric id
 router.get('/quiz/:id', async (req, res) => {
   const { id } = req.params;
-  console.log('Looking for quiz with quiz_key_id:', id);
-  
   try {
-    const quizResult = await pool.query(
-      'SELECT * FROM quizzes WHERE quiz_key_id = $1',
-      [id]
-    );
-    
-    console.log('Quiz query result:', quizResult.rows.length);
-    
+    let quizResult = await pool.query('SELECT * FROM quizzes WHERE quiz_key_id = $1', [id]);
     if (quizResult.rows.length === 0) {
-      // Try to find by ID as fallback
-      const fallbackResult = await pool.query(
-        'SELECT * FROM quizzes WHERE id = $1',
-        [id]
-      );
-      
-      if (fallbackResult.rows.length === 0) {
-        return res.status(404).json({ error: 'Quiz not found' });
-      }
-      
-      // Use fallback result
-      const quiz = fallbackResult.rows[0];
-      const questionsResult = await pool.query(
-        'SELECT * FROM questions WHERE quiz_id = $1 ORDER BY id',
-        [quiz.id]
-      );
-      
-      const questions = [];
-      for (const question of questionsResult.rows) {
-        const optionsResult = await pool.query(
-          'SELECT * FROM options WHERE question_id = $1 ORDER BY id',
-          [question.id]
-        );
-        
-        questions.push({
-          ...question,
-          options: optionsResult.rows
-        });
-      }
-      
-      return res.json({
-        ...quiz,
-        questions
-      });
+      quizResult = await pool.query('SELECT * FROM quizzes WHERE id = $1', [id]);
     }
-    
-    const questionsResult = await pool.query(
-      'SELECT * FROM questions WHERE quiz_key_id = $1 ORDER BY id',
-      [id]
-    );
-    
+    if (quizResult.rows.length === 0) return res.status(404).json({ error: 'Quiz not found' });
+
+    const quiz = quizResult.rows[0];
+    const questionsResult = await pool.query('SELECT * FROM questions WHERE quiz_id = $1 ORDER BY id', [quiz.id]);
+
     const questions = [];
     for (const question of questionsResult.rows) {
-      const optionsResult = await pool.query(
-        'SELECT * FROM options WHERE question_id = $1 ORDER BY id',
-        [question.id]
-      );
-      
+      const optionsResult = await pool.query('SELECT * FROM options WHERE question_id = $1 ORDER BY id', [question.id]);
+      const correctIndex = optionsResult.rows.findIndex(o => o.is_correct);
       questions.push({
-        ...question,
-        options: optionsResult.rows
+        id: question.id,
+        question_text: question.question_text,
+        options: optionsResult.rows.map(o => ({ option_text: o.option_text })),
+        correct_option: correctIndex >= 0 ? correctIndex : 0
       });
     }
-    
-    res.json({
-      ...quizResult.rows[0],
-      questions
-    });
+
+    res.json({ ...quiz, questions });
   } catch (error) {
     console.error('Error:', error);
     res.status(500).json({ error: 'Failed to fetch quiz' });
