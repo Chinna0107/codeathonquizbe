@@ -347,11 +347,10 @@ router.post('/quiz/:id/submit', async (req, res) => {
       );
     } else {
       quizId = quizResult.rows[0].id;
-      
-      // Get questions by quiz_key_id
+
       questionsResult = await pool.query(
-        'SELECT * FROM questions WHERE quiz_key_id = $1 ORDER BY id',
-        [id]
+        'SELECT * FROM questions WHERE quiz_id = $1 ORDER BY id',
+        [quizId]
       );
     }
     
@@ -360,7 +359,7 @@ router.post('/quiz/:id/submit', async (req, res) => {
     
     for (let i = 0; i < questionsResult.rows.length; i++) {
       const question = questionsResult.rows[i];
-      const userAnswer = answers[i];
+      const userAnswer = answers[i] !== undefined ? answers[i] : answers[String(i)];
       
       if (userAnswer !== undefined) {
         const optionsResult = await pool.query(
