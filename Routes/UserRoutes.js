@@ -6,6 +6,13 @@ const pool = require('../database');
 require('dotenv').config();
 const router = express.Router();
 
+// add near top of this file
+const normalizeText = (v) =>
+  (v ?? '').toString()
+    .replace(/\\n/g, '\n')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+
 // Generate random OTP
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -298,8 +305,8 @@ router.get('/quiz/:id', async (req, res) => {
       const correctIndex = optionsResult.rows.findIndex(o => o.is_correct);
       questions.push({
         id: question.id,
-        question_text: question.question_text,
-        options: optionsResult.rows.map(o => ({ option_text: o.option_text })),
+        question_text: normalizeText(question.question_text),
+        options: optionsResult.rows.map(o => ({ option_text: normalizeText(o.option_text) })),
         correct_option: correctIndex >= 0 ? correctIndex : 0
       });
     }
@@ -366,9 +373,16 @@ router.post('/quiz/:id/submit', async (req, res) => {
           'SELECT * FROM options WHERE question_id = $1 ORDER BY id',
           [question.id]
         );
-        
-        if (optionsResult.rows[userAnswer] && optionsResult.rows[userAnswer].is_correct) {
-          score++;
+
+        if (typeof userAnswer === 'string') {
+          const correctOpt = optionsResult.rows.find(o => o.is_correct);
+          if (correctOpt && normalizeText(correctOpt.option_text) === normalizeText(userAnswer)) {
+            score++;
+          }
+        } else {
+          if (optionsResult.rows[userAnswer] && optionsResult.rows[userAnswer].is_correct) {
+            score++;
+          }
         }
       }
     }
