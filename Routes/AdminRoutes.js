@@ -25,8 +25,8 @@ router.post('/create-quiz', adminAuth, async (req, res) => {
     
     for (const q of questions) {
       const questionResult = await pool.query(
-        'INSERT INTO questions (quiz_id, quiz_key_id, question_text) VALUES ($1, $2, $3) RETURNING id',
-        [quizId, quizKeyId, q.question]
+        'INSERT INTO questions (quiz_id, question_text) VALUES ($1, $2) RETURNING id',
+        [quizId, q.question]
       );
       
       const questionId = questionResult.rows[0].id;
@@ -190,13 +190,10 @@ router.put('/quiz/:id', adminAuth, async (req, res) => {
 
     await pool.query('DELETE FROM questions WHERE quiz_id = $1', [id]);
 
-    const quizKeyResult = await pool.query('SELECT quiz_key_id FROM quizzes WHERE id = $1', [id]);
-    const quizKeyId = quizKeyResult.rows[0].quiz_key_id;
-
     for (const q of questions) {
       const questionResult = await pool.query(
-        'INSERT INTO questions (quiz_id, quiz_key_id, question_text) VALUES ($1, $2, $3) RETURNING id',
-        [id, quizKeyId, q.question_text]
+        'INSERT INTO questions (quiz_id, question_text) VALUES ($1, $2) RETURNING id',
+        [id, q.question_text]
       );
       const questionId = questionResult.rows[0].id;
       for (let i = 0; i < q.options.length; i++) {
